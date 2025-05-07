@@ -2,8 +2,6 @@ import "./style.css";
 
 /*-----VARIABLES------*/
 
-let listaMezclada: number[] = [];
-let listaPuntuacion: number[] = [];
 let numeroCarta: number = 0;
 let puntuacion: number = 0;
 let nuevaPartida: boolean = false;
@@ -21,26 +19,6 @@ if (btPlantarse instanceof HTMLButtonElement) {
   btPlantarse.addEventListener("click", plantarse);
 }
 
-/*-----FUNCION barajas INICIAL------*/
-function barajar() {
-  let listaOriginal: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-  while (listaOriginal.length > 0) {
-    let posicion = Math.floor(Math.random() * listaOriginal.length);
-    //Eliminamos el elemento de la listaOriginal
-    let elemento = listaOriginal.splice(posicion, 1)[0];
-    //Incluimos el elemento de la listaOriginal en la listaMezclada en la posicion[0]
-    listaMezclada.unshift(elemento);
-    //Cargamos la lista de puntuaciones
-    if (listaMezclada[0] > 7 && listaMezclada[0] < 11) {
-      listaPuntuacion.unshift(0.5);
-    } else {
-      listaPuntuacion.unshift(listaMezclada[0]);
-    }
-  }
-  return listaMezclada;
-}
-
 /*-----FUNCION MUESTRA PUNTUACION------*/
 function muestraPuntuacion() {
   const elementoPuntuacion = document.getElementById("puntuacion");
@@ -55,8 +33,10 @@ function muestraPuntuacion() {
 }
 
 /*-----FUNCION CALCULA PUNTUACION------*/
-const calculaPuntuacion = () => {
-  puntuacion = puntuacion + listaPuntuacion[numeroCarta];
+const calculaPuntuacion = (valorCarta: number) => {
+  if (valorCarta > 7) {
+    puntuacion += 0.5;
+  } else puntuacion += valorCarta;
 };
 
 /*-----FUNCION MUESTRA MENSAJE------*/
@@ -71,7 +51,7 @@ function muestraMensaje(texto: string) {
   }
 }
 
-/*-----FUNCION MUESTRA CARTA------*/
+/*-----FUNCION MUESTRA CARTA ARRIBA------*/
 function muestraCarta(carta: number) {
   const cartaNew = document.getElementById("carta-back");
   const url = "/imagenes/";
@@ -85,6 +65,11 @@ function muestraCarta(carta: number) {
 function controlGameover() {
   if (puntuacion > 7.5) {
     muestraMensaje("TE PASASTE 😁");
+  }
+  if (puntuacion == 7.5) {
+    muestraMensaje("¡Lo has clavado!¡Enhorabuena!🥳");
+  }
+  if (puntuacion >= 7.5) {
     deshabilitarBtPlantarse();
     textoBtDameCarta("Nueva partida");
     nuevaPartida = true;
@@ -100,15 +85,21 @@ function actualizarCarta() {
   numeroCarta = numeroCarta + 1;
 }
 
+/*----FUNCION GENERAR NUMERO ALEATORIO ---*/
+/* Math.floor(Math.random() * (max - min + 1) + 1)*/
+
+function generarNumeroAleatorio() {
+  return Math.floor(Math.random() * (10 - 1 + 1) + 1);
+}
 /*-----FUNCION DAME CARTA------*/
 function dameCarta() {
   if (nuevaPartida == true) {
     iniciarNuevaPartida();
   } else if (numeroCarta < 11) {
-    const carta = listaMezclada[numeroCarta];
+    const carta = generarNumeroAleatorio();
     muestraCarta(carta);
     jugada(numeroCarta + 1, carta);
-    calculaPuntuacion();
+    calculaPuntuacion(carta);
     muestraPuntuacion();
     controlGameover();
     actualizarCarta();
@@ -179,10 +170,10 @@ function QueHubieraPasado() {
 function plantarse() {
   if (plantado == true) {
     if (numeroCarta < 11) {
-      const cartaPlantarse = listaMezclada[numeroCarta];
+      const cartaPlantarse = generarNumeroAleatorio();
       muestraCarta(cartaPlantarse);
       jugada(numeroCarta + 1, cartaPlantarse);
-      calculaPuntuacion();
+      calculaPuntuacion(cartaPlantarse);
       muestraPuntuacion();
       mensajeQueHabriaPasado();
       numeroCarta = 12;
@@ -204,10 +195,6 @@ function jugada(carta: number, valor: number) {
     cartaJugada.src = url + valor + url2;
   }
 }
-
-barajar();
-console.log("Array cartas : " + listaMezclada);
-console.log("Array puntuacion : " + listaPuntuacion);
 
 /*-----VALIDA SI ESTÁ EL DOM cargado------*/
 document.addEventListener("DOMContentLoaded", muestraPuntuacion);
